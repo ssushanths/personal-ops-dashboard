@@ -1,0 +1,55 @@
+// Helper to generate YYYY-MM-DD dates relative to today.
+const iso = (daysFromToday = 0) => {
+  const d = new Date();
+  d.setDate(d.getDate() + daysFromToday);
+  return d.toISOString().split('T')[0];
+};
+
+
+export function createDefaultState() {
+  return {
+    tasks: [],
+    payments: [],
+    subscriptions: [],
+    expenses: [],
+    inflows: [
+      {
+        id: crypto.randomUUID(),
+        title: 'Salary',
+        amount: 4610.50,
+        recurring: true,
+        recurrenceType: 'monthly_last_weekday',
+        weekday: 4,
+        account: 'Current',
+        active: true
+      }
+    ],
+    accounts: {
+      asOfDate: '2026-04-23',
+      current: {
+        openingBalance: 74.35
+      },
+      savings: {
+        openingBalance: 3062.07
+      }
+    },
+    transfers: [],
+
+    // Savings interest config/tracking
+    savingsInterest: {
+      aer: 0.015,
+      startDate: iso(0),
+      lastPostedMonth: ''
+    }
+  };
+}
+
+export function createDefaultSettings() {
+  return {
+    reminderDays: 2,
+    notificationsEnabled: false,
+    sentReminderKeys: {},
+    salaryUnlocked: false,
+    salaryMessage: 'Salary hidden.'
+  };
+}
