@@ -380,6 +380,7 @@ export function renderApp({ state, settings, finance, today, config }) {
                 <button id="assistantBtn">Send</button>
               </div>
               <div class="chips">
+                <button class="chip" data-fill="Start,currentBalance,savingsBalance,salary">Start setup</button>
                 <button class="chip" data-fill="Income,500,Current,today,Tax refund">Add income</button>
                 <button class="chip" data-fill="Expense,5,Food,Current,today,Coffee">Expense example</button>
                 <button class="chip" data-fill="Payment,200,Insurance,Current,25-04-2026,Car insurance">Payment example</button>

@@ -212,6 +212,51 @@ function parseKeywordCommand(input, state) {
 
   if (!command) return null;
 
+  if (command === 'start') {
+  const [, currentRaw, savingsRaw, salaryRaw] = parts;
+
+  const current = Number(currentRaw || 0);
+  const savings = Number(savingsRaw || 0);
+  const salary = Number(salaryRaw || 0);
+
+  if (Number.isNaN(current) || Number.isNaN(savings)) {
+    return {
+      changed: false,
+      clearInput: false,
+      message: 'Start format: Start,currentBalance,savingsBalance,salary'
+    };
+  }
+
+  state.accounts = {
+    asOfDate: new Date().toISOString().split('T')[0],
+    current: { openingBalance: current },
+    savings: { openingBalance: savings }
+  };
+
+  state.inflows = salary > 0
+    ? [
+        {
+          id: crypto.randomUUID(),
+          title: 'Salary',
+          amount: salary,
+          recurring: true,
+          recurrenceType: 'monthly_last_weekday',
+          weekday: 4,
+          account: 'Current',
+          active: true
+        }
+      ]
+    : [];
+
+  return {
+    changed: true,
+    clearInput: true,
+    message: salary > 0
+      ? `Started with Current ${formatMoney(current)}, Savings ${formatMoney(savings)}, Salary ${formatMoney(salary)}.`
+      : `Started with Current ${formatMoney(current)} and Savings ${formatMoney(savings)}.`
+  };
+}
+
   if (command === 'income') {
   const [, amountRaw, accountRaw, dateRaw, titleRaw] = parts;
 
