@@ -16,7 +16,7 @@ export function createDefaultState() {
       {
         id: crypto.randomUUID(),
         title: 'Salary',
-        amount: 4610.50,
+        amount: 0,
         recurring: true,
         recurrenceType: 'monthly_last_weekday',
         weekday: 4,
@@ -27,10 +27,10 @@ export function createDefaultState() {
     accounts: {
       asOfDate: '2026-04-23',
       current: {
-        openingBalance: 74.35
+        openingBalance: 0
       },
       savings: {
-        openingBalance: 3062.07
+        openingBalance: 0
       }
     },
     transfers: [],
