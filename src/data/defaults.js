@@ -12,33 +12,24 @@ export function createDefaultState() {
     payments: [],
     subscriptions: [],
     expenses: [],
-    inflows: [
-      {
-        id: crypto.randomUUID(),
-        title: 'Salary',
-        amount: 4610.50,
-        recurring: true,
-        recurrenceType: 'monthly_last_weekday',
-        weekday: 4,
-        account: 'Current',
-        active: true
-      }
-    ],
+    inflows: [],
+
     accounts: {
-      asOfDate: '2026-04-23',
+      asOfDate: new Date().toISOString().split('T')[0],
       current: {
-        openingBalance: 74.35
+        openingBalance: 0
       },
       savings: {
-        openingBalance: 3062.07
+        openingBalance: 0
       }
     },
+
     transfers: [],
 
     // Savings interest config/tracking
     savingsInterest: {
       aer: 0.015,
-      startDate: iso(0),
+      startDate: new Date().toISOString().split('T')[0],
       lastPostedMonth: ''
     }
   };
