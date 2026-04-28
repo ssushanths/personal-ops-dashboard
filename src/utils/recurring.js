@@ -1,4 +1,4 @@
-import { addMonthsKeepingDay, daysUntil, toISO } from './date.js';
+import { addMonthsKeepingDay, toISO } from './date.js';
 import { applyMonthEndSavingsInterest } from './savingsInterest.js';
 
 export function runAutoRepeat(state) {

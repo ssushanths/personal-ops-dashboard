@@ -80,38 +80,62 @@ function sectionItem(title, meta, actions, badgeHtml = '') {
 }
 
 function renderTodayMode(state) {
+  const overdue = [];
   const today = [];
   const soon = [];
   const priority = [];
 
   state.payments.forEach((p) => {
     if (isPaymentPaidForCurrentCycle(p)) return;
+
     const d = daysUntil(p.dueDate);
     const text = `${p.title} (${formatMoney(p.amount)})`;
-    if (d === 0) today.push(text);
-    else if (d > 0 && d <= 2) soon.push(text);
-    if (d !== null && d >= 0 && d <= 3) priority.push(`Payment: ${text}`);
+
+    if (d < 0) overdue.push(`Payment: ${text}`);
+    else if (d === 0) today.push(`Payment: ${text}`);
+    else if (d > 0 && d <= 2) soon.push(`Payment: ${text}`);
+
+    if (d !== null && d <= 3) {
+      priority.push(`Payment: ${text}`);
+    }
   });
 
   state.subscriptions.forEach((s) => {
     if (isSubscriptionPaidForCurrentCycle(s)) return;
+
     const d = daysUntil(s.renewalDate);
     const text = `${s.title} (${formatMoney(s.amount)})`;
-    if (d === 0) today.push(text);
-    else if (d > 0 && d <= 2) soon.push(text);
-    if (d !== null && d >= 0 && d <= 3) priority.push(`Subscription: ${text}`);
+
+    if (d < 0) overdue.push(`Subscription: ${text}`);
+    else if (d === 0) today.push(`Subscription: ${text}`);
+    else if (d > 0 && d <= 2) soon.push(`Subscription: ${text}`);
+
+    if (d !== null && d <= 3) {
+      priority.push(`Subscription: ${text}`);
+    }
   });
 
   state.tasks.filter((t) => !t.done).forEach((t) => {
     const d = daysUntil(t.dueDate);
-    if (d === 0) today.push(t.title);
-    else if (d > 0 && d <= 2) soon.push(t.title);
+
+    if (d < 0) overdue.push(`Task: ${t.title}`);
+    else if (d === 0) today.push(`Task: ${t.title}`);
+    else if (d > 0 && d <= 2) soon.push(`Task: ${t.title}`);
+
+    if (d !== null && d <= 3) {
+      priority.push(`Task: ${t.title}`);
+    }
   });
 
   return {
-    today: today.join(' • ') || 'Nothing due today.',
+    dueLabel: overdue.length ? 'Overdue' : 'Due today',
+    due: overdue.length
+      ? overdue.join(' • ')
+      : today.join(' • ') || 'Nothing due today.',
     soon: soon.join(' • ') || 'Nothing urgent in the next 2 days.',
-    priority: priority.slice(0, 3).join(' • ') || 'No high pressure items.'
+    priority: priority.slice(0, 3).join(' • ') || 'No high pressure items.',
+    hasPriority: priority.length > 0,
+    hasOverdue: overdue.length > 0
   };
 }
 
@@ -340,7 +364,9 @@ export function renderApp({ state, settings, finance, today, config }) {
         <div class="hero-right">
           <div class="date">${today.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</div>
           <div>
-            <div class="headline">${todayMode.priority === 'No high pressure items.' ? 'All clear' : 'Focus needed'}</div>
+            <div class="headline ${todayMode.hasOverdue ? 'status-danger' : todayMode.hasPriority ? 'status-warn' : 'status-ok'}">
+              ${todayMode.hasOverdue ? 'Urgent' : todayMode.hasPriority ? 'Focus needed' : 'All clear'}
+            </div>
             <div class="sub">${todayMode.priority}</div>
           </div>
         </div>
@@ -359,14 +385,25 @@ export function renderApp({ state, settings, finance, today, config }) {
 
       <section class="layout">
         <div>
-          <div class="panel">
+          <div class="panel" id="todayModeSection" data-has-overdue="${todayMode.hasOverdue ? 'true' : 'false'}">
             <h2>Today mode</h2>
             <div class="panel-sub">Focus on what matters right now instead of scanning everything.</div>
             <div class="today-box">
               <div class="today-grid">
-                <div class="today-card"><h4>Due today</h4><div class="small-note">${todayMode.today}</div></div>
-                <div class="today-card"><h4>Next 2 days</h4><div class="small-note">${todayMode.soon}</div></div>
-                <div class="today-card"><h4>Top priority</h4><div class="small-note">${todayMode.priority}</div></div>
+                <div class="today-card ${todayMode.hasOverdue ? 'today-overdue' : ''}">
+                  <h4>${todayMode.dueLabel}</h4>
+                  <div class="small-note">${todayMode.due}</div>
+                </div>
+
+                <div class="today-card">
+                  <h4>Next 2 days</h4>
+                  <div class="small-note">${todayMode.soon}</div>
+                </div>
+
+                <div class="today-card ${todayMode.hasPriority ? 'today-priority' : ''}">
+                  <h4>Top priority</h4>
+                  <div class="small-note">${todayMode.priority}</div>
+                </div>
               </div>
             </div>
           </div>

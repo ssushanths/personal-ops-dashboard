@@ -33,12 +33,40 @@ function render() {
   // Re-bind events after each render because the UI is re-created from scratch.
   bindEvents();
 
+  focusOverdueItemsOnce();
+
   // Persist current app state after every render cycle.
   saveState(state);
   saveSettings(settings);
 
   // Notification logic runs after state/settings are fully updated.
   maybeSendNotifications({ state, settings });
+}
+
+let overdueFocusDone = false;
+
+function focusOverdueItemsOnce() {
+  if (overdueFocusDone) return;
+
+  const todayModeSection = document.getElementById('todayModeSection');
+  const hasOverdue = todayModeSection?.dataset.hasOverdue === 'true';
+
+  if (!hasOverdue) return;
+
+  overdueFocusDone = true;
+
+  setTimeout(() => {
+    todayModeSection.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start'
+    });
+
+    todayModeSection.classList.add('focus-overdue');
+
+    setTimeout(() => {
+      todayModeSection.classList.remove('focus-overdue');
+    }, 1800);
+  }, 250);
 }
 
 function bindEvents() {
