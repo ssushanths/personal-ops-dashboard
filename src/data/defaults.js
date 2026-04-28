@@ -44,6 +44,7 @@ export function createDefaultState() {
   };
 }
 
+/*
 export function createDefaultSettings() {
   return {
     reminderDays: 2,
@@ -51,5 +52,17 @@ export function createDefaultSettings() {
     sentReminderKeys: {},
     salaryUnlocked: false,
     salaryMessage: 'Salary hidden.'
+  };
+} */
+
+export function createDefaultSettings() {
+  return {
+    reminderDays: 2,
+    notificationsEnabled: false,
+    sentReminderKeys: {},
+    salaryUnlocked: false,
+    salaryMessage: 'Salary hidden.',
+    monthlySalary: 0,
+    salaryPin: ''
   };
 }

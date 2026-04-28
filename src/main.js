@@ -19,7 +19,7 @@ function render() {
   //runAutoRepeat(state);
 
   // Compute all finance-related derived values in one place.
-  const finance = computeFinancials(state, appConfig.monthlySalary);
+  const finance = computeFinancials(state, Number(settings.monthlySalary || 0));
   const root = document.getElementById('app');
 
   root.innerHTML = renderApp({
@@ -83,7 +83,7 @@ function bindEvents() {
     const status = document.getElementById('exportStatus');
 
     try {
-      const finance = computeFinancials(state, appConfig.monthlySalary);
+      const finance = computeFinancials(state, Number(settings.monthlySalary || 0));
       exportBalanceSheet(state, finance);
       if (status) status.textContent = 'Balance sheet exported.';
     } catch (error) {
@@ -261,8 +261,9 @@ function bindEvents() {
 
   document.getElementById('unlockSalaryBtn')?.addEventListener('click', () => {
     const pin = document.getElementById('salaryPinInput').value.trim();
-    settings.salaryUnlocked = pin === appConfig.salaryPin;
-    settings.salaryMessage = pin === appConfig.salaryPin ? 'Salary visible.' : 'Wrong PIN.';
+    const savedPin = settings.salaryPin || '';
+    settings.salaryUnlocked = Boolean(savedPin && pin === savedPin);
+    settings.salaryMessage = settings.salaryUnlocked ? 'Salary visible.' : 'Wrong PIN.';
     render();
   });
 
@@ -305,6 +306,23 @@ function bindEvents() {
       console.error(error);
     }
   });
+
+  document.getElementById('saveSalarySettingsBtn')?.addEventListener('click', () => {
+    const salaryValue = Number(document.getElementById('monthlySalaryInput')?.value || 0);
+    const pinValue = document.getElementById('salaryPinSetupInput')?.value.trim() || '';
+
+    settings.monthlySalary = salaryValue;
+
+    if (pinValue) {
+      settings.salaryPin = pinValue;
+      settings.salaryUnlocked = false;
+      settings.salaryMessage = 'Salary settings saved. Unlock to view.';
+    } else {
+      settings.salaryMessage = 'Salary updated.';
+    }
+
+    render();
+  });
 }
 
 function onAssistantSubmit() {
@@ -321,7 +339,7 @@ function onAssistantSubmit() {
   }
 
   if (result.action === 'export_report') {
-    const finance = computeFinancials(state, appConfig.monthlySalary);
+    const finance = computeFinancials(state, Number(settings.monthlySalary || 0));
     exportBalanceSheet(state, finance);
   }
 

@@ -351,7 +351,7 @@ export function renderApp({ state, settings, finance, today, config }) {
       )).join('')
     : '<div class="empty">No extra expenses yet.</div>';
 
-  const salaryValue = settings.salaryUnlocked ? formatMoney(config.monthlySalary) : '******';
+  const salaryValue = settings.salaryUnlocked ? formatMoney(settings.monthlySalary || 0) : '******';
   const salaryMessage = settings.salaryUnlocked ? 'Salary visible.' : (settings.salaryMessage || 'Salary hidden.');
 
   return `
@@ -471,6 +471,23 @@ export function renderApp({ state, settings, finance, today, config }) {
                     <button id="lockSalaryBtn" class="secondary">Lock</button>
                   </div>
                 </div>
+
+                <div class="salary-box">
+                <div class="salary-grid">
+                  <div>
+                    <div class="small-note">Monthly salary</div>
+                    <input id="monthlySalaryInput" type="number" min="0" step="0.01" placeholder="Monthly salary" value="${settings.monthlySalary || ''}" />
+                  </div>
+                  <div>
+                    <div class="small-note">Set PIN</div>
+                    <input id="salaryPinSetupInput" type="password" inputmode="numeric" maxlength="6" placeholder="Set 6-digit PIN" />
+                  </div>
+                </div>
+                <div style="margin-top:8px">
+                  <button id="saveSalarySettingsBtn">Save salary settings</button>
+                </div>
+              </div>
+
               </div>
               <div class="small-note" id="salaryStatus">${salaryMessage}</div>
             </div>
