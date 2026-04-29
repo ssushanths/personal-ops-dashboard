@@ -501,3 +501,38 @@ button.success {
 .status-danger {
   color: #fecaca;
 }
+
+.mobile-app {
+  padding: 10px;
+}
+
+.mobile-app .panel {
+  margin-bottom: 12px;
+}
+
+.mobile-hero {
+  grid-template-columns: 1fr;
+  padding: 14px;
+}
+
+.mobile-app .today-grid,
+.mobile-app .finance-grid,
+.mobile-app .salary-grid,
+.mobile-app .three-col,
+.mobile-app .assistant-row {
+  grid-template-columns: 1fr;
+}
+
+.mobile-app .item {
+  flex-direction: column;
+}
+
+.mobile-app .item > div:last-child,
+.mobile-app .item button {
+  width: 100%;
+}
+
+.mobile-app .chip {
+  font-size: 0.75rem;
+  padding: 6px 8px;
+}

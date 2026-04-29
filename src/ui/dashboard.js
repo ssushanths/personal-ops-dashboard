@@ -269,7 +269,151 @@ function renderTransfers(state) {
   )).join('');
 }
 
+function renderMobileApp({ state, settings, finance, today, config }) {
+  const todayMode = renderTodayMode(state);
+  const accountTallyHtml = renderAccountTally(finance, state, settings);
+  const visiblePayments = state.payments.filter((p) => !isPaymentPaidForCurrentCycle(p));
+
+  const paymentHtml = visiblePayments.length
+    ? visiblePayments.map((p) => {
+        const [label, level] = badge(daysUntil(p.dueDate));
+        return sectionItem(
+          p.title,
+          `${formatDate(p.dueDate)} · ${formatMoney(p.amount)} · ${p.category || 'Misc'} · ${p.account || 'Current'}`,
+          `<button class="success" data-mark-payment-paid="${p.id}">Mark paid</button><div style="height:8px"></div><button class="secondary" data-remove="payments:${p.id}">Delete</button>`,
+          `<span class="badge ${level}">${label}</span>${p.recurring ? '<span class="badge blue">Monthly repeat</span>' : ''}`
+        );
+      }).join('')
+    : '<div class="empty">No unpaid payments right now.</div>';
+
+  const taskHtml = state.tasks.length
+    ? state.tasks.map((t) => {
+        const dueInDays = daysUntil(t.dueDate);
+        const [label, level] = badge(dueInDays);
+
+        return sectionItem(
+          t.title,
+          t.dueDate ? `Due ${formatDate(t.dueDate)}` : 'No due date',
+          `<button class="secondary" data-toggle-task="${t.id}">${t.done ? 'Undo' : 'Done'}</button><div style="height:8px"></div><button class="secondary" data-remove="tasks:${t.id}">Delete</button>`,
+          `<span class="badge ${level}">${label}</span>`
+        );
+      }).join('')
+    : '<div class="empty">No tasks yet.</div>';
+
+  const salaryValue = settings.salaryUnlocked ? formatMoney(settings.monthlySalary || 0) : '******';
+  const salaryMessage = settings.salaryUnlocked ? 'Salary visible.' : (settings.salaryMessage || 'Salary hidden.');
+
+  return `
+    <div class="app mobile-app">
+      <section class="hero mobile-hero">
+        <div>
+          <h1>${config.appName}</h1>
+          <p>${today.toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' })}</p>
+        </div>
+        <div class="hero-right">
+          <div class="headline ${todayMode.hasOverdue ? 'status-danger' : todayMode.hasPriority ? 'status-warn' : 'status-ok'}">
+            ${todayMode.hasOverdue ? 'Urgent' : todayMode.hasPriority ? 'Focus needed' : 'All clear'}
+          </div>
+          <div class="sub">${todayMode.priority}</div>
+        </div>
+      </section>
+
+      <section class="panel" id="todayModeSection" data-has-overdue="${todayMode.hasOverdue ? 'true' : 'false'}">
+        <h2>Today mode</h2>
+        <div class="today-box">
+          <div class="today-grid">
+            <div class="today-card ${todayMode.hasOverdue ? 'today-overdue' : ''}">
+              <h4>${todayMode.dueLabel}</h4>
+              <div class="small-note">${todayMode.due}</div>
+            </div>
+            <div class="today-card">
+              <h4>Next 2 days</h4>
+              <div class="small-note">${todayMode.soon}</div>
+            </div>
+            <div class="today-card ${todayMode.hasPriority ? 'today-priority' : ''}">
+              <h4>Top priority</h4>
+              <div class="small-note">${todayMode.priority}</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>Assistant</h2>
+        <div class="assistant-box">
+          <div class="assistant-row">
+            <input id="assistantInput" type="text" placeholder="Expense,5,Food,Current,today,Coffee" />
+            <button id="assistantBtn">Send</button>
+          </div>
+          <div class="chips">
+            <button class="chip" data-fill="Start,currentBalance,savingsBalance,salary">Start</button>
+            <button class="chip" data-fill="Expense,5,Food,Current,today,Coffee">Expense</button>
+            <button class="chip" data-fill="Payment,200,Insurance,Current,25-04-2026,Car insurance">Payment</button>
+            <button class="chip" data-fill="Transfer,300,Current,Savings,today,Monthly savings">Transfer</button>
+          </div>
+          <div class="small-note" id="assistantFeedback"></div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>Financial view</h2>
+        <div class="salary-box">
+          <div class="finance-grid">
+            <div class="finance-metric">
+              <div class="label">Monthly salary</div>
+              <div id="salaryDisplay" class="value ${settings.salaryUnlocked ? '' : 'masked'}">${salaryValue}</div>
+            </div>
+            <div class="finance-metric">
+              <div class="label">Projected balance</div>
+              <div class="value">${maskAmount(finance.balanceLeft, settings.salaryUnlocked)}</div>
+            </div>
+            <div class="finance-metric">
+              <div class="label">This month spend</div>
+              <div class="value">${formatMoney(finance.totalThisMonth)}</div>
+            </div>
+            <div class="finance-metric">
+              <div class="label">Predicted savings</div>
+              <div class="value">${formatMoney(finance.predictedSavings)}</div>
+            </div>
+          </div>
+
+          <div class="three-col" style="margin-top:8px">
+            <input id="salaryPinInput" type="password" inputmode="numeric" maxlength="6" placeholder="PIN" />
+            <button id="unlockSalaryBtn">Unlock</button>
+            <button id="lockSalaryBtn" class="secondary">Lock</button>
+          </div>
+
+          <div class="small-note" id="salaryStatus">${salaryMessage}</div>
+        </div>
+
+        ${accountTallyHtml}
+        ${renderSalaryInfo(state)}
+      </section>
+
+      <section class="panel">
+        <div class="section-head"><h2>Payments</h2></div>
+        <div class="list">${paymentHtml}</div>
+      </section>
+
+      <section class="panel">
+        <div class="section-head"><h2>Tasks</h2><button class="secondary" id="clearDoneBtn">Clear done</button></div>
+        <div class="list">${taskHtml}</div>
+      </section>
+    </div>
+  `;
+}
+
 export function renderApp({ state, settings, finance, today, config }) {
+  const isMobile = window.innerWidth <= 640;
+
+  if (isMobile) {
+    return renderMobileApp({ state, settings, finance, today, config });
+  }
+
+  return renderDesktopApp({ state, settings, finance, today, config });
+}
+
+function renderDesktopApp({ state, settings, finance, today, config }) {
   const todayMode = renderTodayMode(state);
   const categoryInsightsHtml = renderCategoryInsights(state);
   const accountTallyHtml = renderAccountTally(finance, state, settings);
