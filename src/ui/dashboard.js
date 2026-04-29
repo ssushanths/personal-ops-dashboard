@@ -399,6 +399,18 @@ function renderMobileApp({ state, settings, finance, today, config }) {
         <div class="section-head"><h2>Tasks</h2><button class="secondary" id="clearDoneBtn">Clear done</button></div>
         <div class="list">${taskHtml}</div>
       </section>
+
+      <section class="panel">
+        <h2>Backup</h2>
+        <p class="panel-sub">Download or restore your local data.</p>
+
+        <div class="quick-add">
+          <button id="downloadBackupBtn">Download backup</button>
+          <input id="restoreBackupInput" type="file" accept=".json,application/json" />
+          <button id="restoreBackupBtn" class="secondary">Restore backup</button>
+          <div class="small-note" id="backupStatus">No backup action yet.</div>
+        </div>
+      </section>
     </div>
   `;
 }

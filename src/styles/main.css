@@ -536,3 +536,17 @@ button.success {
   font-size: 0.75rem;
   padding: 6px 8px;
 }
+.mobile-app .assistant-box {
+  position: sticky;
+  bottom: 0;
+  background: var(--bg);
+  padding-bottom: 8px;
+}
+.mobile-app .success {
+  font-size: 1rem;
+  padding: 10px;
+}
+.mobile-app {
+  max-width: 480px;
+  margin: 0 auto;
+}
