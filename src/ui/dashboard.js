@@ -458,39 +458,47 @@ export function renderApp({ state, settings, finance, today, config }) {
             <h2>Financial view</h2>
             <div class="panel-sub">Monthly salary is masked by default. Enter your 6-digit PIN to reveal it.</div>
             <div class="salary-box">
-              <div class="salary-grid">
-                <div>
-                  <div class="small-note">Monthly salary</div>
-                  <div id="salaryDisplay" class="finance-metric value ${settings.salaryUnlocked ? '' : 'masked'}">${salaryValue}</div>
+            <div class="salary-box">
+            <div class="salary-grid">
+              <div>
+                <div class="small-note">Monthly salary</div>
+                <div id="salaryDisplay" class="finance-metric value ${settings.salaryUnlocked ? '' : 'masked'}">
+                  ${salaryValue}
                 </div>
-                <div>
-                  <div class="small-note">Reveal salary</div>
-                  <div class="three-col">
-                    <input id="salaryPinInput" type="password" inputmode="numeric" maxlength="6" placeholder="6-digit PIN" />
-                    <button id="unlockSalaryBtn">Unlock</button>
-                    <button id="lockSalaryBtn" class="secondary">Lock</button>
-                  </div>
-                </div>
+              </div>
 
-                <div class="salary-box">
+              <div>
+                <div class="small-note">Reveal salary</div>
+                <div class="three-col">
+                  <input id="salaryPinInput" type="password" inputmode="numeric" maxlength="6" placeholder="6-digit PIN" />
+                  <button id="unlockSalaryBtn">Unlock</button>
+                  <button id="lockSalaryBtn" class="secondary">Lock</button>
+                </div>
+              </div>
+            </div>
+
+            ${(!settings.monthlySalary || !settings.salaryPin) ? `
+              <div class="salary-box" style="margin-top:10px">
                 <div class="salary-grid">
                   <div>
-                    <div class="small-note">Monthly salary</div>
-                    <input id="monthlySalaryInput" type="number" min="0" step="0.01" placeholder="Monthly salary" value="${settings.monthlySalary || ''}" />
+                    <div class="small-note">Set monthly salary</div>
+                    <input id="monthlySalaryInput" type="number" min="0" step="0.01" placeholder="Monthly salary" />
                   </div>
+
                   <div>
                     <div class="small-note">Set PIN</div>
                     <input id="salaryPinSetupInput" type="password" inputmode="numeric" maxlength="6" placeholder="Set 6-digit PIN" />
                   </div>
                 </div>
+
                 <div style="margin-top:8px">
                   <button id="saveSalarySettingsBtn">Save salary settings</button>
                 </div>
               </div>
+            ` : ''}
 
-              </div>
-              <div class="small-note" id="salaryStatus">${salaryMessage}</div>
-            </div>
+            <div class="small-note" id="salaryStatus">${salaryMessage}</div>
+          </div> 
 
             <div class="finance-box">
               <div class="finance-grid">

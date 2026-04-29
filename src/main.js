@@ -307,19 +307,28 @@ function bindEvents() {
     }
   });
 
-  document.getElementById('saveSalarySettingsBtn')?.addEventListener('click', () => {
-    const salaryValue = Number(document.getElementById('monthlySalaryInput')?.value || 0);
-    const pinValue = document.getElementById('salaryPinSetupInput')?.value.trim() || '';
+  document.getElementById('changeSalaryBtn')?.addEventListener('click', () => {
+    settings.monthlySalary = 0;
+    render();
+  });
 
-    settings.monthlySalary = salaryValue;
+  document.getElementById('saveSalarySettingsBtn')?.addEventListener('click', () => {
+    const salaryInput = document.getElementById('monthlySalaryInput');
+    const pinInput = document.getElementById('salaryPinSetupInput');
+
+    const salaryText = salaryInput?.value.trim() || '';
+    const pinValue = pinInput?.value.trim() || '';
+
+    if (salaryText) {
+      settings.monthlySalary = Number(salaryText);
+    }
 
     if (pinValue) {
       settings.salaryPin = pinValue;
-      settings.salaryUnlocked = false;
-      settings.salaryMessage = 'Salary settings saved. Unlock to view.';
-    } else {
-      settings.salaryMessage = 'Salary updated.';
     }
+
+    settings.salaryUnlocked = false;
+    settings.salaryMessage = 'Salary settings saved. Unlock to view.';
 
     render();
   });
