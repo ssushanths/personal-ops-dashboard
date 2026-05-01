@@ -1,5 +1,6 @@
 // Builds and downloads a balance-sheet-style Excel workbook in the browser.
 // Uses the global XLSX object loaded from the SheetJS browser script.
+//I wanted to commit directly from VS Code
 
 function formatDateForExport(dateStr) {
   if (!dateStr) return '';
