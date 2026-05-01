@@ -24,7 +24,7 @@ function migrateState(state) {
       amount: 3000,
       recurring: true,
       recurrenceType: 'monthly_last_weekday',
-      weekday: 4,
+      weekday: 5,
       account: 'Current',
       active: true
     }

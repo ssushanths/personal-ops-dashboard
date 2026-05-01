@@ -26,9 +26,25 @@ function isCurrentMonth(dateStr) {
 }
 
 // Adds an amount into a category accumulator object.
+
 function addToCategoryBucket(bucket, category, amount) {
   const key = category || 'Misc';
   bucket[key] = (bucket[key] || 0) + (Number(amount) || 0);
+}
+
+// Helper to determine forecast salary, using settings or recurring inflow if available.
+function getForecastSalary(state, monthlySalary) {
+  const salaryFromSettings = Number(monthlySalary || 0);
+  if (salaryFromSettings > 0) return salaryFromSettings;
+
+  const salaryInflow = (state.inflows || []).find(
+    (inflow) =>
+      inflow.title === 'Salary' &&
+      inflow.recurring &&
+      inflow.active
+  );
+
+  return Number(salaryInflow?.amount || 0);
 }
 
 
@@ -56,7 +72,7 @@ function getLastWeekdayOfMonth(year, monthIndex, weekday) {
 // - monthly_last_weekday
 //
 // This is enough for your current salary rule:
-// "salary is credited on the last Thursday of the month"
+// "salary is credited on the last Friday of the month"
 function getInflowDateForCurrentMonth(inflow) {
   const now = new Date();
   const year = now.getFullYear();
@@ -99,13 +115,10 @@ function computeAccountBreakdown(state) {
   // Apply inflows only when they have actually occurred.
   (state.inflows || []).forEach((inflow) => {
     if (!inflow.active) return;
+    if (inflow.recurring) return;
 
     const amount = Number(inflow.amount) || 0;
     const account = inflow.account || 'Current';
-    const inflowDate = getInflowDateForCurrentMonth(inflow);
-
-    // Actual account tally only includes salary after the real credit date has passed.
-    if (!inflowDate || inflowDate > todayStr) return;
 
     if (account === 'Current') breakdown.current.salaryInflows += amount;
     if (account === 'Savings') breakdown.savings.salaryInflows += amount;
@@ -115,13 +128,7 @@ function computeAccountBreakdown(state) {
     const amount = Number(payment.amount) || 0;
     const account = payment.account || 'Current';
 
-    let shouldApply = false;
-    if (payment.recurring) {
-      shouldApply = payment.lastPaidMonth === cycleMonthKey(payment.dueDate);
-    } else {
-      shouldApply = Boolean(payment.paid);
-    }
-
+    const shouldApply = Boolean(payment.paidOn || payment.paid);
     if (!shouldApply) return;
 
     if (account === 'Current') breakdown.current.paidPayments += amount;
@@ -131,10 +138,8 @@ function computeAccountBreakdown(state) {
   (state.subscriptions || []).forEach((subscription) => {
     const amount = Number(subscription.amount) || 0;
     const account = subscription.account || 'Current';
-    const shouldApply =
-      subscription.lastPaidMonth === cycleMonthKey(subscription.renewalDate);
 
-    if (!shouldApply) return;
+    if (!subscription.paidOn) return;
 
     if (account === 'Current') breakdown.current.paidSubscriptions += amount;
     if (account === 'Savings') breakdown.savings.paidSubscriptions += amount;
@@ -186,39 +191,22 @@ function computeAccountBalances(state) {
 
   // Apply inflows only after the real credit date has occurred.
   (state.inflows || []).forEach((inflow) => {
-  if (!inflow.active) return;
+    if (!inflow.active) return;
+    if (inflow.recurring) return;
 
-  const amount = Number(inflow.amount) || 0;
-  const account = inflow.account || 'Current';
+    const amount = Number(inflow.amount) || 0;
+    const account = inflow.account || 'Current';
 
-  // NEW: one-time inflow (like tax refund)
-  if (!inflow.recurring) {
     if (account === 'Current') currentBalance += amount;
     if (account === 'Savings') savingsBalance += amount;
-    return;
-  }
-
-  // Existing salary logic
-  const inflowDate = getInflowDateForCurrentMonth(inflow);
-  if (!inflowDate || inflowDate > todayStr) return;
-
-  if (account === 'Current') currentBalance += amount;
-  if (account === 'Savings') savingsBalance += amount;
-});
+  });
 
   // Apply one-time and recurring payments only when actually paid.
   (state.payments || []).forEach((payment) => {
     const amount = Number(payment.amount) || 0;
     const account = payment.account || 'Current';
 
-    let shouldApply = false;
-
-    if (payment.recurring) {
-      shouldApply = payment.lastPaidMonth === cycleMonthKey(payment.dueDate);
-    } else {
-      shouldApply = Boolean(payment.paid);
-    }
-
+    const shouldApply = Boolean(payment.paidOn || payment.paid);
     if (!shouldApply) return;
 
     if (account === 'Current') currentBalance -= amount;
@@ -229,10 +217,8 @@ function computeAccountBalances(state) {
   (state.subscriptions || []).forEach((subscription) => {
     const amount = Number(subscription.amount) || 0;
     const account = subscription.account || 'Current';
-    const shouldApply =
-      subscription.lastPaidMonth === cycleMonthKey(subscription.renewalDate);
 
-    if (!shouldApply) return;
+    if (!subscription.paidOn) return;
 
     if (account === 'Current') currentBalance -= amount;
     if (account === 'Savings') savingsBalance -= amount;
@@ -298,12 +284,13 @@ export function computeFinancials(state, monthlySalary) {
 
   // Forecast now uses expected monthly inflow instead of only the hardcoded salary input.
   // This prepares the app for future additional inflows.
-  const effectiveIncome = inflowsThisMonth || monthlySalary;
-  const balanceLeft = effectiveIncome - totalThisMonth;
-  const predictedSavings = Math.max(balanceLeft, 0);
+  const forecastSalary = getForecastSalary(state, monthlySalary);
+
+  const balanceLeft = forecastSalary - totalThisMonth;
+  const predictedSavings = balanceLeft;
 
   // Simple risk scoring based on expected monthly income usage
-  const spendRatio = effectiveIncome > 0 ? totalThisMonth / effectiveIncome : 0;
+  const spendRatio = forecastSalary > 0 ? totalThisMonth / forecastSalary : 0;
   let riskLevel = 'Safe';
   if (spendRatio >= 0.85) riskLevel = 'High';
   else if (spendRatio >= 0.65) riskLevel = 'Watch';

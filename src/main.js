@@ -1,4 +1,5 @@
 import './styles/main.css';
+import { applyDueSalaryCredits } from './utils/salaryCredits.js';
 import { appConfig } from './config/appConfig.js';
 import { exportBalanceSheet } from './services/exportBalanceSheet.js';
 import { createInitialState, loadState, saveState, loadSettings, saveSettings } from './data/storage.js';
@@ -17,6 +18,7 @@ const settings = loadSettings();
 function render() {
   // Keep recurring items aligned before rendering any UI or calculations.
   //runAutoRepeat(state);
+  applyDueSalaryCredits(state);
 
   // Compute all finance-related derived values in one place.
   const finance = computeFinancials(state, Number(settings.monthlySalary || 0));

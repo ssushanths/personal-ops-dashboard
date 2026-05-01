@@ -20,11 +20,11 @@ function toLocalIsoDate(date) {
   return `${year}-${month}-${day}`;
 }
 
-// Returns the last Thursday of a given month using local calendar values.
-function getLastThursday(year, monthIndex) {
+// Returns the last occurrence of a given weekday in a month using local calendar values.
+function getLastWeekdayOfMonth(year, monthIndex, weekday) {
   const lastDay = new Date(year, monthIndex + 1, 0);
 
-  while (lastDay.getDay() !== 4) {
+  while (lastDay.getDay() !== weekday) {
     lastDay.setDate(lastDay.getDate() - 1);
   }
 
@@ -43,7 +43,11 @@ function renderSalaryInfo(state) {
   const now = new Date();
   const todayStr = now.toISOString().split('T')[0];
 
-  const salaryDate = getLastThursday(now.getFullYear(), now.getMonth());
+  const salaryDate = getLastWeekdayOfMonth(
+    now.getFullYear(),
+    now.getMonth(),
+    inflow.weekday ?? 5
+  );
 
   const isCredited = salaryDate <= todayStr;
 

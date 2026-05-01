@@ -21,7 +21,6 @@ function buildSummaryRows(state, finance) {
     ['Opening Current Account', currentOpening],
     ['Opening Savings Account', savingsOpening],
     ['', ''],
-    ['Projected Leftover', finance.balanceLeft],
     ['Predicted Savings', finance.predictedSavings],
     ['Monthly Recurring', finance.monthlyRecurring],
     ['One-Time Payments This Month', finance.oneTimePaymentsThisMonth],

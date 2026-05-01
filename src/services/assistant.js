@@ -241,7 +241,7 @@ function parseKeywordCommand(input, state) {
           amount: salary,
           recurring: true,
           recurrenceType: 'monthly_last_weekday',
-          weekday: 4,
+          weekday: 5,
           account: 'Current',
           active: true
         }
