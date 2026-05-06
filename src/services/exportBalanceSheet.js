@@ -34,6 +34,21 @@ function buildSummaryRows(state, finance) {
   ];
 }
 
+function mapInflows(state) {
+  return [
+    ['Title', 'Date', 'Amount', 'Account', 'Type'],
+    ...(state.inflows || [])
+      .filter((i) => !i.recurring)
+      .map((i) => [
+        i.title || '',
+        formatDateForExport(i.date || ''),
+        Number(i.amount || 0),
+        i.account || 'Current',
+        i.source === 'auto_salary' ? 'Salary' : 'Income'
+      ])
+  ];
+}
+
 function mapPayments(state) {
   return [
     ['Title', 'Due Date', 'Amount', 'Category', 'Account', 'Recurring', 'Paid', 'Paid On'],
@@ -113,25 +128,43 @@ export function exportBalanceSheet(state, finance) {
   const paymentsRows = mapPayments(state);
   const subscriptionsRows = mapSubscriptions(state);
   const expensesRows = mapExpenses(state);
+  const inflowsRows = mapInflows(state);
   const transfersRows = mapTransfers(state);
 
   const summaryWs = XLSX.utils.aoa_to_sheet(summaryRows);
   const paymentsWs = XLSX.utils.aoa_to_sheet(paymentsRows);
   const subscriptionsWs = XLSX.utils.aoa_to_sheet(subscriptionsRows);
   const expensesWs = XLSX.utils.aoa_to_sheet(expensesRows);
+  const inflowsWs = XLSX.utils.aoa_to_sheet(inflowsRows);
   const transfersWs = XLSX.utils.aoa_to_sheet(transfersRows);
 
   summaryWs['!cols'] = autosizeColumns(summaryRows);
   paymentsWs['!cols'] = autosizeColumns(paymentsRows);
   subscriptionsWs['!cols'] = autosizeColumns(subscriptionsRows);
   expensesWs['!cols'] = autosizeColumns(expensesRows);
+  inflowsWs['!cols'] = autosizeColumns(inflowsRows);
   transfersWs['!cols'] = autosizeColumns(transfersRows);
 
   XLSX.utils.book_append_sheet(wb, summaryWs, 'Summary');
   XLSX.utils.book_append_sheet(wb, paymentsWs, 'Payments');
   XLSX.utils.book_append_sheet(wb, subscriptionsWs, 'Subscriptions');
   XLSX.utils.book_append_sheet(wb, expensesWs, 'Expenses');
+  XLSX.utils.book_append_sheet(wb, inflowsWs, 'Inflows');
   XLSX.utils.book_append_sheet(wb, transfersWs, 'Transfers');
 
-  XLSX.writeFile(wb, 'personal-balance-sheet.xlsx');
+  const now = new Date();
+
+  const timestamp = [
+    now.getFullYear(),
+    String(now.getMonth() + 1).padStart(2, '0'),
+    String(now.getDate()).padStart(2, '0'),
+    '_',
+    String(now.getHours()).padStart(2, '0'),
+    String(now.getMinutes()).padStart(2, '0')
+  ].join('');
+
+  XLSX.writeFile(
+    wb,
+    `personal-ops-balance-sheet-${timestamp}.xlsx`
+  );
 }
